@@ -74,6 +74,10 @@ export default function App() {
     setCurrentPage('home');
   };
 
+  const handleUserUpdate = (updatedUser: UserType) => {
+    setUser(updatedUser);
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -89,7 +93,7 @@ export default function App() {
       case 'eligibility':
         return <Eligibility onNavigate={navigateToNewAppointment} />;
       case 'profile':
-        return <Profile user={user} />;
+        return <Profile user={user} onUserUpdate={handleUserUpdate} />;
       case 'education':
         return <Education />;
       default:

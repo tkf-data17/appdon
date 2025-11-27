@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Droplet, Calendar, Shield, Bell, LogOut, ChevronRight, Edit2, Upload, X } from 'lucide-react';
 import { User as UserType } from '../types';
 
-export function Profile({ user }: { user?: UserType | null }) {
+export function Profile({ user, onUserUpdate }: { user?: UserType | null; onUserUpdate?: (updatedUser: UserType) => void }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
   const [analysisFile, setAnalysisFile] = useState<File | null>(user?.analysisFile || null);
@@ -15,6 +15,20 @@ export function Profile({ user }: { user?: UserType | null }) {
     bloodType: user?.bloodType || '',
     dateOfBirth: user?.dateOfBirth || ''
   });
+
+  // Synchronize editData when user changes
+  useEffect(() => {
+    if (user) {
+      setEditData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        city: user.city || '',
+        bloodType: user.bloodType || '',
+        dateOfBirth: user.dateOfBirth || ''
+      });
+    }
+  }, [user]);
 
   // Mock user data with user prop fallback
   const userData = user ? {
@@ -42,6 +56,18 @@ export function Profile({ user }: { user?: UserType | null }) {
   };
 
   const handleSaveEdit = () => {
+    if (onUserUpdate && user) {
+      const updatedUser: UserType = {
+        ...user,
+        name: editData.name,
+        email: editData.email,
+        phone: editData.phone,
+        city: editData.city,
+        bloodType: editData.bloodType,
+        dateOfBirth: editData.dateOfBirth
+      };
+      onUserUpdate(updatedUser);
+    }
     setIsEditing(false);
   };
 
