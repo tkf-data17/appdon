@@ -16,3 +16,16 @@ export interface Donation {
   volume: number;
   status: 'completed' | 'scheduled';
 }
+
+export interface User {
+  email: string;
+  name: string;
+  phone?: string;
+  city?: string;
+  bloodType?: string;
+  analysisFile?: File | null;
+  authenticated: boolean;
+  dateOfBirth?: string;
+  memberSince: string;
+  totalDonations?: number;
+}

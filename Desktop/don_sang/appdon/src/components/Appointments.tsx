@@ -5,10 +5,11 @@ import { Appointment } from '../types';
 interface AppointmentsProps {
   appointments: Appointment[];
   setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
+  openNewAppointmentForm?: boolean;
 }
 
-export function Appointments({ appointments, setAppointments }: AppointmentsProps) {
-  const [showNewAppointment, setShowNewAppointment] = useState(false);
+export function Appointments({ appointments, setAppointments, openNewAppointmentForm = false }: AppointmentsProps) {
+  const [showNewAppointment, setShowNewAppointment] = useState(openNewAppointmentForm);
   const [editingAppointmentId, setEditingAppointmentId] = useState<number | null>(null);
   
   // New appointment form state
@@ -113,6 +114,11 @@ export function Appointments({ appointments, setAppointments }: AppointmentsProp
             <select
               value={selectedCenter}
               onChange={(e) => setSelectedCenter(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && selectedCenter && selectedDate && selectedTime) {
+                  handleSubmit(e as any);
+                }
+              }}
               required
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
@@ -133,6 +139,11 @@ export function Appointments({ appointments, setAppointments }: AppointmentsProp
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && selectedCenter && selectedDate && selectedTime) {
+                  handleSubmit(e as any);
+                }
+              }}
               min={new Date().toISOString().split('T')[0]}
               required
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"

@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 
+type Page = 'home' | 'centers' | 'appointments' | 'alerts' | 'history' | 'eligibility' | 'profile' | 'education';
+
+interface EligibilityProps {
+  onNavigate?: (page?: Page) => void;
+}
+
 interface Question {
   id: string;
   question: string;
@@ -61,7 +67,7 @@ const questions: Question[] = [
   }
 ];
 
-export function Eligibility() {
+export function Eligibility({ onNavigate }: EligibilityProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<{ [key: string]: any }>({});
   const [showResults, setShowResults] = useState(false);
@@ -125,7 +131,9 @@ export function Eligibility() {
                 Félicitations ! Vous pouvez faire un don de sang. Votre geste peut sauver jusqu'à 3 vies.
               </p>
               <div className="space-y-3">
-                <button className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition">
+                <button 
+                  onClick={() => onNavigate?.()}
+                  className="w-full bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition">
                   Prendre rendez-vous maintenant
                 </button>
                 <button
@@ -243,6 +251,11 @@ export function Eligibility() {
                   const value = parseInt(e.target.value);
                   if (!isNaN(value)) {
                     setAnswers({ ...answers, [currentQuestion.id]: value });
+                  }
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && answers[currentQuestion.id]) {
+                    handleAnswer(answers[currentQuestion.id]);
                   }
                 }}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"

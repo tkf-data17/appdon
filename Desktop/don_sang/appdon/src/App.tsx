@@ -7,8 +7,9 @@ import { History } from './components/History';
 import { Eligibility } from './components/Eligibility';
 import { Profile } from './components/Profile';
 import { Education } from './components/Education';
-import { Home as HomeIcon, MapPin, Calendar, AlertCircle, Clock, Info, User, BookOpen } from 'lucide-react';
-import { Appointment } from './types';
+import { Auth } from './components/Auth';
+import { Home as HomeIcon, MapPin, Calendar, AlertCircle, Clock, Info, User, BookOpen, LogOut } from 'lucide-react';
+import { Appointment, User as UserType } from './types';
 import { supabase } from './supabaseClient'; // Import Supabase client
 
 const mockAppointments: Appointment[] = [
@@ -35,6 +36,8 @@ type Page = 'home' | 'centers' | 'appointments' | 'alerts' | 'history' | 'eligib
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [openNewAppointment, setOpenNewAppointment] = useState(false);
+  const [user, setUser] = useState<UserType | null>(null);
 
   // --- SUPABASE EXAMPLE: Fetching data ---
   const [countries, setCountries] = useState<any[]>([]);
@@ -61,6 +64,16 @@ export default function App() {
   }, []);
   // --- END SUPABASE EXAMPLE ---
 
+  const navigateToNewAppointment = () => {
+    setOpenNewAppointment(true);
+    setCurrentPage('appointments');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentPage('home');
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -68,15 +81,15 @@ export default function App() {
       case 'centers':
         return <Centers />;
       case 'appointments':
-        return <Appointments appointments={appointments} setAppointments={setAppointments} />;
+        return <Appointments appointments={appointments} setAppointments={setAppointments} openNewAppointmentForm={openNewAppointment} />;
       case 'alerts':
         return <Alerts />;
       case 'history':
         return <History appointments={appointments} onNavigate={setCurrentPage} />;
       case 'eligibility':
-        return <Eligibility />;
+        return <Eligibility onNavigate={navigateToNewAppointment} />;
       case 'profile':
-        return <Profile />;
+        return <Profile user={user} />;
       case 'education':
         return <Education />;
       default:
@@ -85,32 +98,105 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <>
+      {!user ? (
+        <Auth onLoginSuccess={setUser} />
+      ) : (
+        <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-red-600 text-white sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <span className="text-red-600 text-xl">🩸</span>
-              </div>
-              <div>
-                <h1 className="font-bold">Don de Sang Togo</h1>
-                <p className="text-xs opacity-90">Sauvez des vies</p>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Branding and Title */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <span className="text-red-600 text-xl">🩸</span>
             </div>
+            <div>
+              <h1 className="font-bold text-lg">Don de Sang Togo</h1>
+              <p className="text-xs opacity-90">Sauvez des vies</p>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex space-x-6">
+            <button
+              onClick={() => setCurrentPage('home')}
+              className={`flex items-center gap-1 p-2 rounded-md transition ${
+                currentPage === 'home' ? 'bg-red-700' : 'hover:bg-red-700'
+              }`}
+            >
+              <HomeIcon className="w-5 h-5" />
+              <span className="text-xs">Accueil</span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('centers')}
+              className={`flex items-center gap-1 p-2 rounded-md transition ${
+                currentPage === 'centers' ? 'bg-red-700' : 'hover:bg-red-700'
+              }`}
+            >
+              <MapPin className="w-5 h-5" />
+              <span className="text-xs">Centres</span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('appointments')}
+              className={`flex items-center gap-1 p-2 rounded-md transition ${
+                currentPage === 'appointments' ? 'bg-red-700' : 'hover:bg-red-700'
+              }`}
+            >
+              <Calendar className="w-5 h-5" />
+              <span className="text-xs">RDV</span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('alerts')}
+              className={`flex items-center gap-1 p-2 rounded-md transition relative ${
+                currentPage === 'alerts' ? 'bg-red-700' : 'hover:bg-red-700'
+              }`}
+            >
+              <AlertCircle className="w-5 h-5" />
+              <span className="text-xs">Alertes</span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('education')}
+              className={`flex items-center gap-1 p-2 rounded-md transition ${
+                currentPage === 'education' ? 'bg-red-700' : 'hover:bg-red-700'
+              }`}
+            >
+              <BookOpen className="w-5 h-5" />
+              <span className="text-xs">Infos</span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('history')}
+              className={`flex items-center gap-1 p-2 rounded-md transition ${
+                currentPage === 'history' ? 'bg-red-700' : 'hover:bg-red-700'
+              }`}
+            >
+              <Clock className="w-5 h-5" />
+              <span className="text-xs">Hist.</span>
+            </button>
+          </nav>
+
+          {/* Profile Button and Logout */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage('profile')}
               className="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center hover:bg-red-800 transition"
             >
               <User className="w-5 h-5" />
             </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 p-2 rounded-md hover:bg-red-700 transition"
+              title="Déconnexion"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto">
+      <main className="max-w-7xl mx-auto pb-4">
         {/* Supabase Data Display Example */}
         <div className="p-4 bg-white shadow-md rounded-lg mt-4">
           <h2 className="text-xl font-semibold mb-2">Supabase Data Example (Countries)</h2>
@@ -132,69 +218,8 @@ export default function App() {
 
         {renderPage()}
       </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-        <div className="max-w-7xl mx-auto px-2">
-          <div className="grid grid-cols-6 gap-1">
-            <button
-              onClick={() => setCurrentPage('home')}
-              className={`flex flex-col items-center py-2 px-1 transition ${
-                currentPage === 'home' ? 'text-red-600' : 'text-gray-600'
-              }`}
-            >
-              <HomeIcon className="w-6 h-6 mb-1" />
-              <span className="text-xs">Accueil</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('centers')}
-              className={`flex flex-col items-center py-2 px-1 transition ${
-                currentPage === 'centers' ? 'text-red-600' : 'text-gray-600'
-              }`}
-            >
-              <MapPin className="w-6 h-6 mb-1" />
-              <span className="text-xs">Centres</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('appointments')}
-              className={`flex flex-col items-center py-2 px-1 transition ${
-                currentPage === 'appointments' ? 'text-red-600' : 'text-gray-600'
-              }`}
-            >
-              <Calendar className="w-6 h-6 mb-1" />
-              <span className="text-xs">RDV</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('alerts')}
-              className={`flex flex-col items-center py-2 px-1 transition relative ${
-                currentPage === 'alerts' ? 'text-red-600' : 'text-gray-600'
-              }`}
-            >
-              <AlertCircle className="w-6 h-6 mb-1" />
-              <span className="text-xs">Alertes</span>
-              <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('education')}
-              className={`flex flex-col items-center py-2 px-1 transition ${
-                currentPage === 'education' ? 'text-red-600' : 'text-gray-600'
-              }`}
-            >
-              <BookOpen className="w-6 h-6 mb-1" />
-              <span className="text-xs">Infos</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('history')}
-              className={`flex flex-col items-center py-2 px-1 transition ${
-                currentPage === 'history' ? 'text-red-600' : 'text-gray-600'
-              }`}
-            >
-              <Clock className="w-6 h-6 mb-1" />
-              <span className="text-xs">Hist.</span>
-            </button>
-          </div>
-        </div>
-      </nav>
     </div>
+      )}
+    </>
   );
 }

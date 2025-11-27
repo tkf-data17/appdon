@@ -1,12 +1,34 @@
 import { useState } from 'react';
-import { User, Mail, Phone, MapPin, Droplet, Calendar, Shield, Bell, LogOut, ChevronRight, Edit2 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Droplet, Calendar, Shield, Bell, LogOut, ChevronRight, Edit2, Upload, X } from 'lucide-react';
+import { User as UserType } from '../types';
 
-export function Profile() {
+export function Profile({ user }: { user?: UserType | null }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
+  const [analysisFile, setAnalysisFile] = useState<File | null>(user?.analysisFile || null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    city: user?.city || '',
+    bloodType: user?.bloodType || '',
+    dateOfBirth: user?.dateOfBirth || ''
+  });
 
-  // Mock user data
-  const userData = {
+  // Mock user data with user prop fallback
+  const userData = user ? {
+    name: user.name || 'Nouvel utilisateur',
+    email: user.email || '',
+    phone: user.phone || 'Non renseigné',
+    bloodType: user.bloodType || 'Non renseigné',
+    dateOfBirth: user.dateOfBirth || '2000-01-01',
+    city: user.city || 'Non renseigné',
+    region: user.city ? 'Région' : 'Non renseigné',
+    totalDonations: user.totalDonations || 0,
+    nextDonation: new Date(Date.now() + 64 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    memberSince: user.memberSince || new Date().toISOString().split('T')[0]
+  } : {
     name: 'Koffi Mensah',
     email: 'koffi.mensah@example.tg',
     phone: '+228 90 12 34 56',
@@ -17,6 +39,10 @@ export function Profile() {
     totalDonations: 5,
     nextDonation: '2025-12-29',
     memberSince: '2024-01-15'
+  };
+
+  const handleSaveEdit = () => {
+    setIsEditing(false);
   };
 
   const menuItems = [
@@ -58,6 +84,102 @@ export function Profile() {
 
   return (
     <div className="p-4 space-y-6 pb-8">
+      {/* Edit Profile Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Modifier le profil</h3>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="w-8 h-8 hover:bg-gray-100 rounded-full flex items-center justify-center"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                <input
+                  type="text"
+                  value={editData.name}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editData.email}
+                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                <input
+                  type="tel"
+                  value={editData.phone}
+                  onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ville</label>
+                <input
+                  type="text"
+                  value={editData.city}
+                  onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Groupe sanguin</label>
+                <select
+                  value={editData.bloodType}
+                  onChange={(e) => setEditData({ ...editData, bloodType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                >
+                  <option value="">Sélectionner</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
+                <input
+                  type="date"
+                  value={editData.dateOfBirth}
+                  onChange={(e) => setEditData({ ...editData, dateOfBirth: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Profile Header */}
       <div className="bg-gradient-to-br from-red-500 to-red-700 rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-start justify-between mb-4">
@@ -75,7 +197,10 @@ export function Profile() {
               </div>
             </div>
           </div>
-          <button className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white/30 transition">
+          <button
+            onClick={() => setIsEditing(true)}
+            className="w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center hover:bg-white/30 transition"
+          >
             <Edit2 className="w-5 h-5" />
           </button>
         </div>
@@ -156,6 +281,51 @@ export function Profile() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Analysis File Upload Section */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <h3 className="text-blue-900 mb-3 flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          Copie de votre résultat d'analyse
+        </h3>
+        <p className="text-sm text-blue-800 mb-4">
+          Ajoutez une copie de votre résultat d'analyse sanguine pour confirmer votre groupe sanguin (optionnel).
+        </p>
+        <label className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition">
+          <Upload className="w-5 h-5 text-blue-600" />
+          <span className="text-sm text-blue-700 font-medium">
+            {analysisFile ? analysisFile.name : 'Cliquez pour importer (max 5 MB)'}
+          </span>
+          <input
+            type="file"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                  alert('Fichier trop volumineux (max 5 MB)');
+                  return;
+                }
+                setAnalysisFile(file);
+              }
+            }}
+            accept="image/*,application/pdf"
+            className="hidden"
+          />
+        </label>
+        {analysisFile && (
+          <div className="mt-3 p-3 bg-white rounded border border-blue-300">
+            <p className="text-sm text-gray-700">
+              ✓ <strong>{analysisFile.name}</strong> - {(analysisFile.size / 1024).toFixed(2)} KB
+            </p>
+            <button
+              onClick={() => setAnalysisFile(null)}
+              className="text-sm text-red-600 hover:underline mt-2"
+            >
+              Supprimer le fichier
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Settings Menu */}
